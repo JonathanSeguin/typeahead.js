@@ -1057,6 +1057,7 @@
             this.input = o.input;
             this.menu = o.menu;
             this.enabled = true;
+            this.autoselect = !!o.autoselect;
             this.active = false;
             this.input.hasFocus() && this.activate();
             this.dir = this.input.getLangDir();
@@ -1105,6 +1106,10 @@
             },
             _onDatasetRendered: function onDatasetRendered(type, dataset, suggestions, async) {
                 this._updateHint();
+                if (this.autoselect) {
+                    var cursorClass = this.selectors.cursor.substr(1);
+                    this.menu.$node.find(this.selectors.suggestion).first().addClass(cursorClass);
+                }
                 this.eventBus.trigger("render", suggestions, async, dataset);
             },
             _onAsyncRequested: function onAsyncRequested(type, dataset, query) {
@@ -1128,6 +1133,8 @@
                 var $selectable;
                 if ($selectable = this.menu.getActiveSelectable()) {
                     this.select($selectable) && $e.preventDefault();
+                } else if (this.autoselect) {
+                    this.select(this.menu.getTopSelectable()) && $e.preventDefault();
                 }
             },
             _onTabKeyed: function onTabKeyed(type, $e) {
@@ -1362,7 +1369,8 @@
                         input: input,
                         menu: menu,
                         eventBus: eventBus,
-                        minLength: o.minLength
+                        minLength: o.minLength,
+                        autoselect: o.autoselect
                     }, www);
                     $input.data(keys.www, www);
                     $input.data(keys.typeahead, typeahead);
